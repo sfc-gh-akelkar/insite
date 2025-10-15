@@ -1,4 +1,4 @@
-# Medpace inSitE - Snowflake Optimization Project
+# Medpace inSitE - Snowflake Optimization
 
 This repository contains the analysis and implementation guide for optimizing Medpace's **inSitE** (Informatics Site Engine) application by moving data processing from R/Shiny to Snowflake.
 
