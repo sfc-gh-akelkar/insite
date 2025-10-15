@@ -117,24 +117,24 @@ Use [`Medpace_inSitE_Snowflake_Implementation.ipynb`](./Medpace_inSitE_Snowflake
 
 ## 📋 Implementation Checklist
 
-### Phase 1: Setup (Week 1)
+### Phase 1: Setup
 - [ ] Enable change tracking on base tables
 - [ ] Create `CLINOPS_TRANSFORM_WH` warehouse
 - [ ] Create `site_metrics_base` Dynamic Table
 - [ ] Monitor initial refresh
 
-### Phase 2: Testing (Week 2-3)
+### Phase 2: Testing
 - [ ] Test query performance (<1 second?)
 - [ ] Verify data accuracy
 - [ ] Monitor refresh performance
 - [ ] Adjust `TARGET_LAG` if needed
 
-### Phase 3: Functions & Procedures (Week 4-5)
+### Phase 3: Functions & Procedures
 - [ ] Create SQL Functions for custom filters
 - [ ] Create Stored Procedure for Monte Carlo
 - [ ] Test from R application
 
-### Phase 4: Production (Week 6-8)
+### Phase 4: Production
 - [ ] Update R app to query new objects
 - [ ] Parallel testing (old vs new)
 - [ ] User acceptance testing
