@@ -1,4 +1,4 @@
-# Medpace inSitE Application Modernization
+# Medpace inSitE Application Optimization
 ## Moving Data Processing from R to Snowflake
 
 **Prepared for:** Medpace  
