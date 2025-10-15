@@ -244,6 +244,49 @@ The session token represents the **active session**, not the authentication mech
 
 ---
 
+## Helper Scripts
+
+Two R scripts are provided to simplify Cortex API integration:
+
+### 1. **cortex_api_parser.R** - Response Parsing Functions
+- `parse_cortex_response()` - Parse raw HTTP response
+- `extract_cortex_text()` - Extract text from multiple response formats
+- `extract_cortex_usage()` - Get token usage statistics
+- `extract_cortex_metadata()` - Get response metadata (ID, model, timestamp)
+- `parse_cluster_interpretations()` - Medpace-specific cluster parsing
+- `cortex_api_call()` - All-in-one safe API call with error handling
+
+### 2. **cortex_api_example.R** - Usage Examples
+- Simple question-answer
+- System prompt + user prompt
+- Cluster interpretation (Medpace use case)
+- Manual response parsing
+- Error handling examples
+- Shiny app integration template
+
+To use in your code:
+```r
+source("cortex_api_parser.R")
+
+# Quick API call with automatic parsing
+result <- cortex_api_call(
+  url = api_url,
+  token = session_token,
+  model = "claude-4-sonnet",
+  messages = list(
+    list(role = "system", content = "You are a helpful assistant"),
+    list(role = "user", content = "Analyze this data...")
+  )
+)
+
+if (result$success) {
+  print(result$text)
+  print(result$usage)
+}
+```
+
+---
+
 ## Testing
 
 Test the REST API call independently:
