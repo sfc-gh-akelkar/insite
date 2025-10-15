@@ -100,8 +100,17 @@ observeEvent(input$interpretclusters, {
   
   df = clustersummary()
   
-  # Build cluster descriptions (same as before)
-  statement2 = "I ran a k-means cluster to select the best clinical trial sites. Analyse each cluster based on the following characteristics of each cluster center:"
+  # NEW: Enhanced prompt for better LLM responses
+  statement2 = "You are an expert clinical trial site selection advisor helping to interpret k-means clustering results. The clusters group clinical trial sites based on their historical performance metrics.
+
+Context:
+- Higher enrollment percentiles indicate better-performing sites (75th percentile = top 25% of sites)
+- Lower startup weeks indicate faster site activation
+- More studies indicate more experience
+- These are real sites being evaluated for a new clinical trial
+
+Your task: Provide actionable, specific interpretations that help users understand what type of sites are in each cluster."
+  
   allclusters = ""
   
   for(i in unique(df$cluster)){
@@ -116,20 +125,6 @@ observeEvent(input$interpretclusters, {
   }
   
   statement4 = paste0("\n\nProvide a concise interpretation of each cluster in 10 words or less")
-  
-  # NEW: Enhanced system prompt for better LLM responses
-  system_prompt = "You are an expert clinical trial site selection advisor helping to interpret k-means clustering results. The clusters group clinical trial sites based on their historical performance metrics.
-
-Context:
-- Higher enrollment percentiles indicate better-performing sites (75th percentile = top 25% of sites)
-- Lower startup weeks indicate faster site activation
-- More studies indicate more experience
-- These are real sites being evaluated for a new clinical trial
-
-Your task: Provide actionable, specific interpretations that help users understand what type of sites are in each cluster."
-
-  # NEW: Combine prompts for API call
-  user_prompt = paste0(statement2, allclusters, statement4)
   
   # NEW: Get session token from existing ODBC connection
   session_token <- tryCatch({
@@ -154,8 +149,8 @@ Your task: Provide actionable, specific interpretations that help users understa
       body = toJSON(list(
         model = "claude-4-sonnet",
         messages = list(
-          list(role = "system", content = system_prompt),
-          list(role = "user", content = user_prompt)
+          list(role = "system", content = statement2),
+          list(role = "user", content = paste0(allclusters, statement4))
         ),
         max_tokens = 500
       ), auto_unbox = TRUE),
