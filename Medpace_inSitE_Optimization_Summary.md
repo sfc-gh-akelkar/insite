@@ -8,12 +8,20 @@
 
 ## The Problem
 
-Your inSitE application currently **loads 16 million rows (730 MB)** from Snowflake into R for every analysis, then processes everything in R memory. This creates:
+Your inSitE application currently **loads 16 million rows (730 MB)** from `environment.RData` into R memory at startup, then performs heavy data wrangling every time a user clicks "Collate":
 
-- ⏱️ **Slow performance:** 3-6 minutes per analysis
+**What Happens Per User Query (Lines 970-1100):**
+- 15+ `filter()` operations on large datasets (500K-3.5M rows)
+- 10+ `left_join()`/`full_join()` operations joining multiple tables
+- 8+ `group_by()` + `summarize()` aggregations
+- String manipulations, column renaming, type conversions
+- All in R memory, single-threaded
+
+**Result:**
+- ⏱️ **Slow performance:** 30-60 seconds per collation, 3-6 minutes full analysis
 - 💾 **High memory usage:** 2-3 GB per user session  
-- 👥 **Limited scalability:** Only 5-10 concurrent users
-- 🔄 **Complex R code:** 400+ lines of data wrangling
+- 👥 **Limited scalability:** Only 5-10 concurrent users on Shiny server
+- 🔄 **Complex R code:** 400+ lines of dplyr data wrangling
 
 ## The Solution: Push Compute to Snowflake
 
