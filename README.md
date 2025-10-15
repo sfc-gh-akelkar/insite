@@ -13,6 +13,12 @@ This repository contains the analysis and implementation guide for optimizing Me
 - Dynamic Tables vs SQL Functions decision framework
 - Implementation timeline and discussion questions
 
+**[Cortex_REST_API_Optimization.md](./Cortex_REST_API_Optimization.md)**
+- Optimize Cortex LLM calls to eliminate warehouse costs
+- Before/after code comparison for cluster interpretation
+- Switch from ODBC SQL approach to direct REST API
+- Enhanced prompt for better AI responses
+
 ### 🔧 Implementation
 
 **[Medpace_inSitE_Snowflake_Implementation.ipynb](./Medpace_inSitE_Snowflake_Implementation.ipynb)**
@@ -111,6 +117,7 @@ Use [`Medpace_inSitE_Snowflake_Implementation.ipynb`](./Medpace_inSitE_Snowflake
 ### 3. Update R Application
 - Replace data processing with simple queries to Dynamic Tables
 - Add function calls for user-specific operations
+- Optimize Cortex LLM calls using REST API (see [`Cortex_REST_API_Optimization.md`](./Cortex_REST_API_Optimization.md))
 - See R code examples at the end of implementation notebook
 
 ---
@@ -136,6 +143,7 @@ Use [`Medpace_inSitE_Snowflake_Implementation.ipynb`](./Medpace_inSitE_Snowflake
 
 ### Phase 4: Production
 - [ ] Update R app to query new objects
+- [ ] Optimize Cortex LLM calls (REST API vs ODBC)
 - [ ] Parallel testing (old vs new)
 - [ ] User acceptance testing
 - [ ] Production deployment
