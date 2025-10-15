@@ -136,10 +136,14 @@ Your task: Provide actionable, specific interpretations that help users understa
   
   if (is.null(session_token)) return()
   
+  # NEW: Get Snowflake account identifier from connection
+  account_info <- DBI::dbGetQuery(aiconn, 
+    "SELECT CURRENT_ORGANIZATION_NAME() || '-' || CURRENT_ACCOUNT_NAME() as account")[[1]]
+  
   # NEW: Call Cortex REST API instead of ODBC
   response <- tryCatch({
     POST(
-      url = paste0("https://", Sys.getenv("SNOWFLAKE_ACCOUNT"), 
+      url = paste0("https://", account_info, 
                    ".snowflakecomputing.com/api/v2/cortex/inference:complete"),
       add_headers(
         "Authorization" = paste("Bearer", session_token),
@@ -208,19 +212,17 @@ Your task: Provide actionable, specific interpretations that help users understa
 
 ---
 
-## Environment Variable Setup
+## No Additional Setup Required
 
-Add to `.Renviron` or set at app startup:
+The solution automatically retrieves the Snowflake account identifier from the existing `aiconn` connection:
 
 ```r
-# At top of app (after library loads)
-Sys.setenv(SNOWFLAKE_ACCOUNT = "your_account_identifier")
+# This query extracts the account info dynamically
+account_info <- DBI::dbGetQuery(aiconn, 
+  "SELECT CURRENT_ORGANIZATION_NAME() || '-' || CURRENT_ACCOUNT_NAME() as account")[[1]]
 ```
 
-Or in `.Renviron`:
-```bash
-SNOWFLAKE_ACCOUNT=your_account_identifier
-```
+This works seamlessly with the existing DSN-based connections (`"AIrole"`, `"FeasibilityRead"`) without requiring environment variables or hardcoded values
 
 ---
 
@@ -232,9 +234,11 @@ Test the REST API call independently:
 # Quick test
 aiconn <- DBI::dbConnect(odbc::odbc(), "AIrole", Warehouse = "INFORMATICS_AI")
 token <- DBI::dbGetQuery(aiconn, "SELECT SYSTEM$GET_SESSION_TOKEN()")[[1]]
+account_info <- DBI::dbGetQuery(aiconn, 
+  "SELECT CURRENT_ORGANIZATION_NAME() || '-' || CURRENT_ACCOUNT_NAME() as account")[[1]]
 
 response <- POST(
-  url = paste0("https://", Sys.getenv("SNOWFLAKE_ACCOUNT"), 
+  url = paste0("https://", account_info, 
                ".snowflakecomputing.com/api/v2/cortex/inference:complete"),
   add_headers(
     "Authorization" = paste("Bearer", token),
