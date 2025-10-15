@@ -100,18 +100,24 @@ observeEvent(input$interpretclusters, {
   
   df = clustersummary()
   
-  # Build cluster descriptions
+  # Build cluster descriptions (same as before)
+  statement2 = "I ran a k-means cluster to select the best clinical trial sites. Analyse each cluster based on the following characteristics of each cluster center:"
   allclusters = ""
+  
   for(i in unique(df$cluster)){
     tempstatement = paste0("\n"
                            ,"Cluster "
                            ,i
                            ,":\n"
                            ,paste(subset(df$shortprompt, df$cluster == i), collapse="\n"))
-    allclusters = paste(allclusters, tempstatement, sep="\n")
+    allclusters = paste(allclusters
+                        ,tempstatement
+                        ,sep="\n")
   }
   
-  # Build enhanced prompt
+  statement4 = paste0("\n\nProvide a concise interpretation of each cluster in 10 words or less")
+  
+  # NEW: Enhanced system prompt for better LLM responses
   system_prompt = "You are an expert clinical trial site selection advisor helping to interpret k-means clustering results. The clusters group clinical trial sites based on their historical performance metrics.
 
 Context:
@@ -122,13 +128,10 @@ Context:
 
 Your task: Provide actionable, specific interpretations that help users understand what type of sites are in each cluster."
 
-  user_prompt = paste0(
-    "Analyze these k-means clusters of clinical trial sites:\n",
-    allclusters,
-    "\n\nProvide a concise interpretation of each cluster in 10 words or less."
-  )
+  # NEW: Combine prompts for API call
+  user_prompt = paste0(statement2, allclusters, statement4)
   
-  # Get session token from existing ODBC connection
+  # NEW: Get session token from existing ODBC connection
   session_token <- tryCatch({
     DBI::dbGetQuery(aiconn, "SELECT SYSTEM$GET_SESSION_TOKEN()")[[1]]
   }, error = function(e) {
@@ -138,7 +141,7 @@ Your task: Provide actionable, specific interpretations that help users understa
   
   if (is.null(session_token)) return()
   
-  # Call Cortex REST API
+  # NEW: Call Cortex REST API instead of ODBC
   response <- tryCatch({
     POST(
       url = paste0("https://", Sys.getenv("SNOWFLAKE_ACCOUNT"), 
@@ -168,16 +171,16 @@ Your task: Provide actionable, specific interpretations that help users understa
     return()
   }
   
-  # Parse response
+  # NEW: Parse REST API response
   llm_result <- content(response, as = "parsed")
-  llm_text <- llm_result$choices[[1]]$messages[[1]]$content
+  llmreply <- data.frame(V1 = llm_result$choices[[1]]$messages[[1]]$content)
   
-  # Extract cluster interpretations
+  # Extract cluster interpretations (same as before)
   interpretation(
-    data.frame(results = strsplit(llm_text, '\n')[[1]]) %>%
+    data.frame(results = strsplit(llmreply[,1], '\n')[[1]]) %>%
       rowwise() %>%
-      mutate(firstword = strsplit(results, " ")[[1]][1],
-             cluster = grepl('cluster', firstword, ignore.case=TRUE)) %>%
+      mutate(firstword = strsplit(results, " ")[[1]][1]
+             , cluster = grepl('cluster', firstword, ignore.case=T)) %>%
       filter(cluster == TRUE) %>% 
       select(Interpretation = results)
   )
