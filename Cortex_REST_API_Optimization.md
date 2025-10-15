@@ -191,9 +191,10 @@ Your task: Provide actionable, specific interpretations that help users understa
 ## Key Changes
 
 ### 1. **Authentication**
-- Extracts session token from existing `aiconn` ODBC connection
-- No additional authentication setup required
-- Reuses same credentials
+- Extracts session token from existing `aiconn` ODBC connection using `SYSTEM$GET_SESSION_TOKEN()`
+- **Works with any authentication method**: OAuth, key pair, username/password, SSO, etc.
+- No additional authentication setup required - reuses whatever auth method the ODBC connection is already using
+- The session token is tied to the active connection, not the authentication method
 
 ### 2. **Enhanced Prompt**
 - Separated system prompt (role/context) from user prompt (specific task)
@@ -222,7 +223,24 @@ account_info <- DBI::dbGetQuery(aiconn,
   "SELECT CURRENT_ORGANIZATION_NAME() || '-' || CURRENT_ACCOUNT_NAME() as account")[[1]]
 ```
 
-This works seamlessly with the existing DSN-based connections (`"AIrole"`, `"FeasibilityRead"`) without requiring environment variables or hardcoded values
+This works seamlessly with:
+- ✅ **Existing DSN connections** (`"AIrole"`, `"FeasibilityRead"`)
+- ✅ **Any authentication method** (OAuth, key pair, username/password, SSO)
+- ✅ **No environment variables or hardcoded values**
+
+### Authentication Methods Supported
+
+The `SYSTEM$GET_SESSION_TOKEN()` function returns a valid session token for **any** active Snowflake connection, regardless of how it was authenticated:
+
+| Authentication Method | ODBC Setup | Works with REST API? |
+|----------------------|------------|---------------------|
+| **OAuth** | `authenticator=oauth` in DSN | ✅ Yes |
+| **Key Pair** | Certificate files configured | ✅ Yes |
+| **Username/Password** | Credentials in DSN | ✅ Yes |
+| **SSO/SAML** | `authenticator=externalbrowser` | ✅ Yes |
+| **Okta** | `authenticator=okta` | ✅ Yes |
+
+The session token represents the **active session**, not the authentication mechanism. Once authenticated (by any method), the session token can be used for REST API calls
 
 ---
 
