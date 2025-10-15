@@ -19,6 +19,12 @@ This repository contains the analysis and implementation guide for optimizing Me
 - Switch from ODBC SQL approach to direct REST API
 - Enhanced prompt for better AI responses
 
+**[cortex_api_parser.R](./cortex_api_parser.R)** & **[cortex_api_example.R](./cortex_api_example.R)**
+- Helper functions to parse Cortex REST API responses
+- Handle multiple response formats automatically
+- Extract text, usage stats, and metadata
+- Shiny app integration examples
+
 ### 🔧 Implementation
 
 **[Medpace_inSitE_Snowflake_Implementation.ipynb](./Medpace_inSitE_Snowflake_Implementation.ipynb)**
