@@ -1,0 +1,243 @@
+# Medpace inSitE - Snowflake Modernization Project
+
+This repository contains the analysis and implementation guide for modernizing Medpace's **inSitE** (Informatics Site Engine) application by moving data processing from R/Shiny to Snowflake.
+
+## 📁 Repository Contents
+
+### 📄 Documentation
+
+**[Medpace_inSitE_Modernization_Summary.md](./Medpace_inSitE_Modernization_Summary.md)**
+- Executive summary with performance improvements and ROI
+- Current architecture bottlenecks with real code examples
+- Before/after comparisons showing code simplification
+- Dynamic Tables vs SQL Functions decision framework
+- Implementation timeline and discussion questions
+
+### 🔧 Implementation
+
+**[Medpace_inSitE_Snowflake_Implementation.sql](./Medpace_inSitE_Snowflake_Implementation.sql)**
+- Production-ready Snowflake notebook with 8 implementation steps
+- Dynamic Tables for core metrics (auto-refreshing, <1 second queries)
+- SQL Functions for user-specific operations
+- Stored Procedures for ML models and Monte Carlo simulations
+- Complete monitoring, cost controls, and maintenance queries
+- R code examples for integration
+
+### 📊 Reference Data
+
+**[app (2).R](./app%20(2).R)**
+- Original R Shiny application (3,808 lines)
+- Shows current data processing approach
+- Identifies specific bottlenecks addressed by modernization
+
+**Table Statistics:**
+- `SnowflakeQueryResults.xlsx - gb.csv` - Actual table sizes from Medpace Snowflake
+- `SnowflakeQueryResults.xlsx - rows added.csv` - Table row counts and update frequency
+
+---
+
+## 🎯 Executive Summary
+
+### Current State
+- **16 million rows (730 MB)** loaded into R per analysis
+- **2-3 GB memory** per user session
+- **3-6 minutes** per analysis
+- **5-10 concurrent users** max capacity
+
+### After Modernization
+- **<5 MB** data transfer per query
+- **100-200 MB memory** per session
+- **15-25 seconds** per analysis
+- **50-100+ concurrent users** capacity
+
+### Performance Improvements
+
+| Component | Current | After Optimization | Improvement |
+|-----------|---------|-------------------|-------------|
+| **Data Collation** | 30-60 sec | <1 sec (Dynamic Table) | **30-60x faster** |
+| **Monte Carlo (10K)** | 2-5 min | 5-10 sec | **20-30x faster** |
+| **Full Analysis** | 3-6 min | 15-25 sec | **12-18x faster** |
+| **Memory Usage** | 2-3 GB | 100-200 MB | **95% reduction** |
+
+---
+
+## 🏗️ Architecture Overview
+
+### Recommended Hybrid Approach
+
+```
+┌─────────────────────────────────────┐
+│         SNOWFLAKE                   │
+├─────────────────────────────────────┤
+│                                     │
+│  Dynamic Tables (90% of queries)   │
+│  └─ site_metrics_base              │
+│     • TARGET_LAG = '1 hour'        │
+│     • REFRESH_MODE = 'INCREMENTAL' │
+│     • Query time: <1 second ✓      │
+│                                     │
+│  SQL Functions (10% of queries)    │
+│  └─ User-specific filters          │
+│     • Custom study codes           │
+│     • Query time: 1-2 seconds      │
+│                                     │
+│  Stored Procedures (ML/complex)    │
+│  └─ Monte Carlo simulations        │
+│  └─ K-means clustering             │
+└─────────────────────────────────────┘
+         ↓ <5 MB transfer
+┌─────────────────────────────────────┐
+│      R SHINY APP                    │
+│  Only UI and visualization          │
+└─────────────────────────────────────┘
+```
+
+---
+
+## 🚀 Quick Start
+
+### 1. Review Documentation
+Start with [`Medpace_inSitE_Modernization_Summary.md`](./Medpace_inSitE_Modernization_Summary.md) to understand:
+- Why the current architecture is inefficient
+- What changes are needed
+- Expected benefits and ROI
+
+### 2. Implement in Snowflake
+Use [`Medpace_inSitE_Snowflake_Implementation.sql`](./Medpace_inSitE_Snowflake_Implementation.sql):
+- Execute step-by-step in Snowflake Worksheets
+- Each section has detailed explanations
+- Includes testing and monitoring queries
+
+### 3. Update R Application
+- Replace data processing with simple queries to Dynamic Tables
+- Add function calls for user-specific operations
+- See R code examples at the end of implementation notebook
+
+---
+
+## 📋 Implementation Checklist
+
+### Phase 1: Setup (Week 1)
+- [ ] Enable change tracking on base tables
+- [ ] Create `CLINOPS_TRANSFORM_WH` warehouse
+- [ ] Create `site_metrics_base` Dynamic Table
+- [ ] Monitor initial refresh
+
+### Phase 2: Testing (Week 2-3)
+- [ ] Test query performance (<1 second?)
+- [ ] Verify data accuracy
+- [ ] Check refresh costs
+- [ ] Adjust `TARGET_LAG` if needed
+
+### Phase 3: Functions & Procedures (Week 4-5)
+- [ ] Create SQL Functions for custom filters
+- [ ] Create Stored Procedure for Monte Carlo
+- [ ] Test from R application
+
+### Phase 4: Production (Week 6-8)
+- [ ] Update R app to query new objects
+- [ ] Parallel testing (old vs new)
+- [ ] User acceptance testing
+- [ ] Production deployment
+
+---
+
+## 💰 Cost Impact
+
+| Resource | Before | After | Change |
+|----------|--------|-------|--------|
+| **Snowflake Compute** | $208/month | $1,050/month | +$842/month |
+| **App Server** | $2,000/month | $1,000/month | -$1,000/month |
+| **Net Savings** | - | - | **$158/month** |
+
+**Additional Benefits:**
+- 10x user capacity on same infrastructure
+- 12-18x faster analysis time
+- Better data governance and auditability
+- Scalability for future growth
+
+---
+
+## 🔍 Key Decisions
+
+### Dynamic Tables vs SQL Functions
+
+**Use Dynamic Tables for:**
+- ✅ Site performance metrics (queried frequently)
+- ✅ Core aggregations (changes predictably)
+- ✅ Shared across multiple users
+- ✅ Heavy joins and aggregations
+
+**Use SQL Functions for:**
+- ✅ User-entered custom study codes
+- ✅ Dynamic filtering (parameters change per query)
+- ✅ Always need real-time data
+
+### Setting TARGET_LAG
+
+| Data Type | Update Frequency | Recommended TARGET_LAG |
+|-----------|------------------|------------------------|
+| Site performance | Daily | `1-2 hours` |
+| Study relationships | Weekly | `12-24 hours` |
+| Historical data | Monthly | `1-2 days` |
+
+**Monitor and adjust:**
+```sql
+SELECT 
+    target_lag_sec / 60 as target_minutes,
+    actual_lag_sec / 60 as actual_minutes
+FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLES('site_metrics_base'));
+```
+
+---
+
+## 📞 Support
+
+### Questions to Discuss
+1. **Data Freshness:** Can site metrics be 1-2 hours old?
+2. **User Concurrency:** How many simultaneous users?
+3. **Warehouse Sizing:** What size for refreshes?
+4. **Cost Budget:** Comfort level with increased Snowflake compute?
+
+### Next Steps
+- Schedule technical workshop with Snowflake team
+- Run proof of concept (Phase 1)
+- Measure actual performance improvements
+- Make go/no-go decision based on results
+
+---
+
+## 📚 Additional Resources
+
+- [Snowflake Dynamic Tables Documentation](https://docs.snowflake.com/en/user-guide/dynamic-tables-intro)
+- [Snowflake Stored Procedures](https://docs.snowflake.com/en/sql-reference/stored-procedures)
+- [Snowpark Python](https://docs.snowflake.com/en/developer-guide/snowpark/python/index)
+
+---
+
+## 🏷️ Version History
+
+**v1.0** (October 2025)
+- Initial analysis and recommendations
+- Production-ready implementation notebook
+- Complete before/after documentation
+
+---
+
+## 👥 Contributors
+
+**Snowflake Solution Engineering Team**
+- Architecture design and recommendations
+- Implementation notebook development
+- Performance analysis
+
+**Medpace Team**
+- Original R/Shiny application
+- Requirements and use cases
+- Data environment details
+
+---
+
+**License:** Internal Medpace/Snowflake collaboration  
+**Status:** Ready for implementation
+
