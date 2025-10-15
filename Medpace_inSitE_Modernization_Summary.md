@@ -554,14 +554,6 @@ session.sproc.register(
 
 3. **Total R Code Reduction:** ~600 lines removed, app becomes simpler
 
-### Expected Timeline
-
-- **Week 1-2:** Design SQL functions, stored procedures
-- **Week 3-5:** Implement and test in Snowflake
-- **Week 6-8:** Update R app to call Snowflake functions
-- **Week 9-10:** Parallel testing (old vs new)
-- **Week 11-12:** Production deployment
-
 ---
 
 ## Choosing the Right Approach: Dynamic Tables vs Functions
@@ -693,17 +685,17 @@ FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLES('site_metrics_base'));
 
 ### Recommended Approach
 
-**Phase 1: Proof of Concept (2 weeks)**
+**Phase 1: Proof of Concept**
 - Implement ONE component (data collation) in Snowflake
 - Side-by-side comparison with current R implementation
 - Measure actual performance improvement
 
-**Phase 2: Full Implementation (6-8 weeks)**
+**Phase 2: Full Implementation**
 - Migrate remaining components
 - Comprehensive testing
 - User acceptance testing
 
-**Phase 3: Production Rollout (2 weeks)**
+**Phase 3: Production Rollout**
 - Gradual rollout to users
 - Monitor performance and costs
 - Iterate based on feedback
