@@ -244,6 +244,40 @@ The session token represents the **active session**, not the authentication mech
 
 ---
 
+## Response Format: Streaming vs Non-Streaming
+
+The Cortex API can return responses in two formats:
+
+### 1. **Streaming** (Default) - `Content-Type: text/event-stream`
+- Real-time token generation as they're produced
+- Multiple `data:` lines with JSON chunks
+- Better for showing progress in UI
+- **Our parser handles this automatically**
+
+### 2. **Non-Streaming** - `Content-Type: application/json`
+- Complete response after all tokens generated
+- Single JSON object
+- Simpler structure
+
+To request **non-streaming** responses, change the `Accept` header:
+
+```r
+# Non-streaming request
+POST(
+  url = api_url,
+  add_headers(
+    "Authorization" = paste("Bearer", session_token),
+    "Content-Type" = "application/json",
+    "Accept" = "application/json"  # This line requests non-streaming
+  ),
+  body = ...
+)
+```
+
+**Good news:** The parser scripts automatically detect and handle both formats, so you don't need to change your code!
+
+---
+
 ## Helper Scripts
 
 Two R scripts are provided to simplify Cortex API integration:

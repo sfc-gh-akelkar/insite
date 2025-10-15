@@ -159,7 +159,57 @@ Your task: Provide actionable, specific interpretations that help users understa
 
 
 ################################################################################
-## Example 4: Manual Response Parsing (Low-Level)
+## Example 4: Streaming Response (text/event-stream)
+################################################################################
+
+streaming_response_example <- function() {
+  cat("\n=== Example 4: Streaming Response ===\n")
+  cat("The API returns streaming responses by default (text/event-stream)\n")
+  cat("The parser automatically handles this format!\n\n")
+  
+  # Make request (streaming is default)
+  response <- POST(
+    url = api_url,
+    add_headers(
+      "Authorization" = paste("Bearer", session_token),
+      "Content-Type" = "application/json",
+      "Accept" = "application/json, text/event-stream"  # Accepts both formats
+    ),
+    body = toJSON(list(
+      model = "claude-4-sonnet",
+      messages = list(
+        list(role = "user", content = "List 3 key benefits of Snowflake in one sentence each")
+      ),
+      max_tokens = 200
+    ), auto_unbox = TRUE),
+    encode = "json"
+  )
+  
+  cat("Response Content-Type:", headers(response)$`content-type`, "\n")
+  
+  # Parse automatically handles streaming format
+  parsed <- parse_cortex_response(response)
+  
+  if (!is.null(parsed)) {
+    cat("\nResponse format detected and parsed successfully!\n")
+    
+    if (!is.null(parsed$num_chunks)) {
+      cat("Number of streaming chunks:", parsed$num_chunks, "\n")
+    }
+    
+    # Extract text works the same regardless of format
+    text <- extract_cortex_text(parsed)
+    cat("\nExtracted text:\n", text, "\n")
+    
+    # Usage stats
+    usage <- extract_cortex_usage(parsed)
+    cat("\nTokens used:", usage$total_tokens, "\n")
+  }
+}
+
+
+################################################################################
+## Example 5: Manual Response Parsing (Low-Level)
 ################################################################################
 
 manual_parsing_example <- function() {
@@ -211,7 +261,7 @@ manual_parsing_example <- function() {
 
 
 ################################################################################
-## Example 5: Error Handling
+## Example 6: Error Handling
 ################################################################################
 
 error_handling_example <- function() {
@@ -255,6 +305,7 @@ error_handling_example <- function() {
 
 # simple_example()
 # system_prompt_example()
+# streaming_response_example()
 
 # For cluster example, provide sample data:
 # sample_cluster_data <- data.frame(

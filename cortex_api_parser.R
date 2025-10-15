@@ -4,9 +4,13 @@
 ## This script provides helper functions to parse responses from the 
 ## Snowflake Cortex LLM REST API (/api/v2/cortex/inference:complete)
 ##
+## Supports both response formats:
+##   - Streaming (text/event-stream) - DEFAULT
+##   - Non-streaming (application/json)
+##
 ## Usage:
 ##   source("cortex_api_parser.R")
-##   result <- parse_cortex_response(response)
+##   result <- parse_cortex_response(response)  # Automatically detects format
 ##   text <- extract_cortex_text(result)
 ################################################################################
 
@@ -19,6 +23,8 @@ library(dplyr)
 ################################################################################
 
 #' Parse Cortex REST API Response
+#' 
+#' Handles both regular JSON and streaming (text/event-stream) responses
 #' 
 #' @param response httr response object from POST call to Cortex API
 #' @return List containing parsed response or NULL if error
@@ -42,7 +48,15 @@ parse_cortex_response <- function(response) {
     return(NULL)
   }
   
-  # Parse JSON response
+  # Check content type to determine parsing strategy
+  content_type <- headers(response)$`content-type`
+  
+  # Handle streaming response (text/event-stream)
+  if (!is.null(content_type) && grepl("text/event-stream", content_type, ignore.case = TRUE)) {
+    return(parse_streaming_response(response))
+  }
+  
+  # Handle regular JSON response
   tryCatch({
     parsed <- content(response, as = "parsed", encoding = "UTF-8")
     return(parsed)
@@ -53,9 +67,86 @@ parse_cortex_response <- function(response) {
 }
 
 
+#' Parse Streaming Response (Server-Sent Events)
+#' 
+#' Parses text/event-stream format from Cortex API
+#' 
+#' @param response httr response object with streaming content
+#' @return List containing parsed response (last complete message)
+parse_streaming_response <- function(response) {
+  
+  tryCatch({
+    # Get raw text content
+    raw_text <- content(response, as = "text", encoding = "UTF-8")
+    
+    # Split by lines
+    lines <- strsplit(raw_text, "\n")[[1]]
+    
+    # Filter lines that start with "data: " and extract JSON
+    data_lines <- lines[grepl("^data: ", lines)]
+    
+    if (length(data_lines) == 0) {
+      warning("No data lines found in streaming response")
+      return(NULL)
+    }
+    
+    # Parse each data line and collect
+    chunks <- list()
+    full_text <- ""
+    last_parsed <- NULL
+    
+    for (line in data_lines) {
+      # Remove "data: " prefix
+      json_str <- sub("^data: ", "", line)
+      
+      # Parse JSON
+      chunk <- tryCatch({
+        fromJSON(json_str, simplifyVector = FALSE)
+      }, error = function(e) {
+        NULL
+      })
+      
+      if (!is.null(chunk)) {
+        chunks[[length(chunks) + 1]] <- chunk
+        last_parsed <- chunk
+        
+        # Accumulate text from delta content if present
+        if (!is.null(chunk$choices) && length(chunk$choices) > 0) {
+          choice <- chunk$choices[[1]]
+          if (!is.null(choice$delta) && !is.null(choice$delta$content)) {
+            full_text <- paste0(full_text, choice$delta$content)
+          }
+        }
+      }
+    }
+    
+    # Return combined response using last chunk's structure
+    if (!is.null(last_parsed)) {
+      # Update with accumulated text
+      if (nchar(full_text) > 0 && !is.null(last_parsed$choices) && length(last_parsed$choices) > 0) {
+        # Create a unified response structure
+        result <- last_parsed
+        result$choices[[1]]$messages <- list(list(content = full_text))
+        result$full_text <- full_text
+        result$num_chunks <- length(chunks)
+        return(result)
+      }
+      return(last_parsed)
+    }
+    
+    warning("Could not parse streaming response")
+    return(NULL)
+    
+  }, error = function(e) {
+    warning(paste("Error parsing streaming response:", e$message))
+    return(NULL)
+  })
+}
+
+
 #' Extract Text from Cortex Response
 #' 
-#' Handles multiple response formats from Cortex API
+#' Handles multiple response formats from Cortex API including streaming
 #' 
 #' @param parsed_response Parsed JSON response from parse_cortex_response()
 #' @return Character string of response text, or NULL if extraction fails
@@ -66,6 +157,11 @@ extract_cortex_text <- function(parsed_response) {
   }
   
   tryCatch({
+    # Format 0: Streaming response - check for accumulated full_text first
+    if (!is.null(parsed_response$full_text)) {
+      return(parsed_response$full_text)
+    }
+    
     # Check if choices array exists
     if (is.null(parsed_response$choices) || length(parsed_response$choices) == 0) {
       warning("No choices found in response")
@@ -87,7 +183,7 @@ extract_cortex_text <- function(parsed_response) {
       }
     }
     
-    # Format 3: choices[[1]]$delta$content (streaming format)
+    # Format 3: choices[[1]]$delta$content (streaming format - single chunk)
     if (!is.null(choice$delta) && !is.null(choice$delta$content)) {
       return(choice$delta$content)
     }
