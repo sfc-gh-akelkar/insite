@@ -1,5 +1,5 @@
 /*================================================================================
-  MEDPACE inSitE MODERNIZATION - SNOWFLAKE IMPLEMENTATION
+  MEDPACE inSitE OPTIMIZATION - SNOWFLAKE IMPLEMENTATION
   
   This notebook contains all Snowflake objects needed to move data processing
   from R to Snowflake for the inSitE application.

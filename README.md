@@ -1,12 +1,12 @@
-# Medpace inSitE - Snowflake Modernization Project
+# Medpace inSitE - Snowflake Optimization Project
 
-This repository contains the analysis and implementation guide for modernizing Medpace's **inSitE** (Informatics Site Engine) application by moving data processing from R/Shiny to Snowflake.
+This repository contains the analysis and implementation guide for optimizing Medpace's **inSitE** (Informatics Site Engine) application by moving data processing from R/Shiny to Snowflake.
 
 ## 📁 Repository Contents
 
 ### 📄 Documentation
 
-**[Medpace_inSitE_Modernization_Summary.md](./Medpace_inSitE_Modernization_Summary.md)**
+**[Medpace_inSitE_Optimization_Summary.md](./Medpace_inSitE_Optimization_Summary.md)**
 - Executive summary with performance improvements and ROI
 - Current architecture bottlenecks with real code examples
 - Before/after comparisons showing code simplification
@@ -28,7 +28,7 @@ This repository contains the analysis and implementation guide for modernizing M
 **[app (2).R](./app%20(2).R)**
 - Original R Shiny application (3,808 lines)
 - Shows current data processing approach
-- Identifies specific bottlenecks addressed by modernization
+- Identifies specific bottlenecks addressed by optimization
 
 **Table Statistics:**
 - `SnowflakeQueryResults.xlsx - gb.csv` - Actual table sizes from Medpace Snowflake
@@ -44,7 +44,7 @@ This repository contains the analysis and implementation guide for modernizing M
 - **3-6 minutes** per analysis
 - **5-10 concurrent users** max capacity
 
-### After Modernization
+### After Optimization
 - **<5 MB** data transfer per query
 - **100-200 MB memory** per session
 - **15-25 seconds** per analysis
@@ -97,7 +97,7 @@ This repository contains the analysis and implementation guide for modernizing M
 ## 🚀 Quick Start
 
 ### 1. Review Documentation
-Start with [`Medpace_inSitE_Modernization_Summary.md`](./Medpace_inSitE_Modernization_Summary.md) to understand:
+Start with [`Medpace_inSitE_Optimization_Summary.md`](./Medpace_inSitE_Optimization_Summary.md) to understand:
 - Why the current architecture is inefficient
 - What changes are needed
 - Expected benefits and ROI
