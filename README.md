@@ -7,7 +7,7 @@ This repository contains the analysis and implementation guide for optimizing Me
 ### 📄 Documentation
 
 **[Medpace_inSitE_Optimization_Summary.md](./Medpace_inSitE_Optimization_Summary.md)**
-- Executive summary with performance improvements and ROI
+- Executive summary with performance improvements
 - Current architecture bottlenecks with real code examples
 - Before/after comparisons showing code simplification
 - Dynamic Tables vs SQL Functions decision framework
@@ -15,12 +15,12 @@ This repository contains the analysis and implementation guide for optimizing Me
 
 ### 🔧 Implementation
 
-**[Medpace_inSitE_Snowflake_Implementation.sql](./Medpace_inSitE_Snowflake_Implementation.sql)**
+**[Medpace_inSitE_Snowflake_Implementation.ipynb](./Medpace_inSitE_Snowflake_Implementation.ipynb)**
 - Production-ready Snowflake notebook with 8 implementation steps
 - Dynamic Tables for core metrics (auto-refreshing, <1 second queries)
 - SQL Functions for user-specific operations
 - Stored Procedures for ML models and Monte Carlo simulations
-- Complete monitoring, cost controls, and maintenance queries
+- Complete monitoring and maintenance queries
 - R code examples for integration
 
 ### 📊 Reference Data
@@ -100,12 +100,12 @@ This repository contains the analysis and implementation guide for optimizing Me
 Start with [`Medpace_inSitE_Optimization_Summary.md`](./Medpace_inSitE_Optimization_Summary.md) to understand:
 - Why the current architecture is inefficient
 - What changes are needed
-- Expected benefits and ROI
+- Expected benefits
 
 ### 2. Implement in Snowflake
-Use [`Medpace_inSitE_Snowflake_Implementation.sql`](./Medpace_inSitE_Snowflake_Implementation.sql):
-- Execute step-by-step in Snowflake Worksheets
-- Each section has detailed explanations
+Use [`Medpace_inSitE_Snowflake_Implementation.ipynb`](./Medpace_inSitE_Snowflake_Implementation.ipynb):
+- Import into Snowflake Notebooks and run cell-by-cell
+- Each section has detailed markdown explanations
 - Includes testing and monitoring queries
 
 ### 3. Update R Application
@@ -126,7 +126,7 @@ Use [`Medpace_inSitE_Snowflake_Implementation.sql`](./Medpace_inSitE_Snowflake_I
 ### Phase 2: Testing (Week 2-3)
 - [ ] Test query performance (<1 second?)
 - [ ] Verify data accuracy
-- [ ] Check refresh costs
+- [ ] Monitor refresh performance
 - [ ] Adjust `TARGET_LAG` if needed
 
 ### Phase 3: Functions & Procedures (Week 4-5)
@@ -141,20 +141,6 @@ Use [`Medpace_inSitE_Snowflake_Implementation.sql`](./Medpace_inSitE_Snowflake_I
 - [ ] Production deployment
 
 ---
-
-## 💰 Cost Impact
-
-| Resource | Before | After | Change |
-|----------|--------|-------|--------|
-| **Snowflake Compute** | $208/month | $1,050/month | +$842/month |
-| **App Server** | $2,000/month | $1,000/month | -$1,000/month |
-| **Net Savings** | - | - | **$158/month** |
-
-**Additional Benefits:**
-- 10x user capacity on same infrastructure
-- 12-18x faster analysis time
-- Better data governance and auditability
-- Scalability for future growth
 
 ---
 
@@ -197,7 +183,7 @@ FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLES('site_metrics_base'));
 1. **Data Freshness:** Can site metrics be 1-2 hours old?
 2. **User Concurrency:** How many simultaneous users?
 3. **Warehouse Sizing:** What size for refreshes?
-4. **Cost Budget:** Comfort level with increased Snowflake compute?
+4. **Resource Planning:** Expected concurrent user load?
 
 ### Next Steps
 - Schedule technical workshop with Snowflake team

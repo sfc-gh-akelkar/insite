@@ -23,13 +23,6 @@ Your inSitE application currently loads **16 million rows (730 MB)** from Snowfl
 | **Concurrent Users** | 5-10 users | 50-100 users | **10x capacity** |
 | **R Code Complexity** | 400+ lines data processing | 30 lines SQL calls | **90% simpler** |
 
-### Investment Required
-
-- **Development Time:** 8-12 weeks
-- **Snowflake Cost Increase:** ~$850/month (compute for processing)
-- **Infrastructure Savings:** ~$1,000/month (smaller app servers)
-- **Net Savings:** ~$150/month + 10x user capacity
-
 ---
 
 ## Why Current Architecture is Inefficient
@@ -569,7 +562,7 @@ For the data transformations, you can use **Dynamic Tables** (pre-computed, auto
 
 **Advantages:**
 - ⚡ **Instant queries** - Results already computed (<1 second vs 3-5 seconds)
-- 💰 **Cost efficient** - Incremental refresh processes only changed data
+- ⚡ **Efficient processing** - Incremental refresh processes only changed data
 - 👥 **Shared across users** - Multiple users query same pre-computed results
 - 🔄 **No manual scheduling** - Snowflake handles refresh automatically
 - 📊 **Multi-tool access** - Can be queried by Tableau, Python, R simultaneously
@@ -609,7 +602,7 @@ build <- DBI::dbGetQuery(myconn, "
 
 **Advantages:**
 - 🎯 **Always real-time** - No data lag
-- 💾 **No storage cost** - Only compute when needed
+- 💾 **On-demand computation** - Only compute when needed
 - 🔧 **Flexible parameters** - Handle user-specific inputs
 
 **Use SQL Functions/Stored Procedures for:**
@@ -675,9 +668,9 @@ FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLES('site_metrics_base'));
 -- 2. Use larger warehouse
 ```
 
-**Cost Consideration:**
-- Lower `TARGET_LAG` = more frequent refreshes = higher compute cost
-- Higher `TARGET_LAG` = fewer refreshes = lower cost (but less fresh data)
+**Refresh Frequency:**
+- Lower `TARGET_LAG` = more frequent refreshes = more compute usage
+- Higher `TARGET_LAG` = fewer refreshes = less compute usage (but less fresh data)
 
 ---
 
@@ -718,7 +711,7 @@ FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLES('site_metrics_base'));
 
 5. **Model Registry:** Use Snowflake's Model Registry for ML models?
 
-6. **Cost Monitoring:** Set up resource monitors to track Dynamic Table costs?
+6. **Resource Monitoring:** Set up resource monitors to track Dynamic Table usage?
 
 ---
 
