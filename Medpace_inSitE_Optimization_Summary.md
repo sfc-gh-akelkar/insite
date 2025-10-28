@@ -8,7 +8,7 @@
 
 ## The Problem
 
-Your inSitE application currently **loads 16 million rows (730 MB)** from `environment.RData` into R memory at startup, then performs heavy data wrangling every time a user clicks "Collate":
+The inSitE application currently **loads 16 million rows (730 MB)** from `environment.RData` into R memory at startup, then performs heavy data wrangling every time a user clicks "Collate":
 
 **What Happens Per User Query (Lines 970-1100):**
 - 15+ `filter()` operations on large datasets (500K-3.5M rows)
